@@ -1,0 +1,26 @@
+[project]
+name = "school-chk-bot"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "maksim12",email = "maksi.volodin.05@mail.ru"}
+]
+
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "alembic (>=1.18.4,<2.0.0)",
+    "sqlalchemy (>=2.0.46,<3.0.0)",
+    "aiogram (>=3.25.0,<4.0.0)",
+    "fastapi (>=0.129.0,<0.130.0)",
+    "uvicorn (>=0.40.0,<0.41.0)",
+    "apscheduler (>=3.11.2,<4.0.0)",
+    "redis (>=5.2.1,<6.0.0)"
+]
+
+[tool.poetry]
+package-mode = false
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
