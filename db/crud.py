@@ -1,4 +1,5 @@
-from sqlalchemy import select
+from sqlalchemy import select, update
+
 from db.db_helper import db_helper
 from db.models import User, Events
 from exception.db import UserNotFound
@@ -38,9 +39,6 @@ async def add_event(tg_id: int, event_name: str):
 
 async def set_segment(tg_id: int, segment: str):
     async with db_helper.session_factory() as session:
-        user = await get_user(tg_id)
-        if user:
-            user.segment = segment
-            await session.commit()
-        else:
-            raise UserNotFound
+        stmt = update(User).where(User.tg_id == tg_id).values(segment=segment)
+        await session.execute(stmt)
+        await session.commit()

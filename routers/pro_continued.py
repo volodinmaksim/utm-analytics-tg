@@ -11,6 +11,7 @@ from data.story_content import (
     final_goodbye_text_up,
 )
 from loader import scheduler, dp, bot
+from utils.common import my_send_text_and_photos
 from utils.keyboards import get_reviews_kb
 
 router = Router()
@@ -43,13 +44,11 @@ async def send_pro_text_12(chat_id: int):
     state_context = dp.fsm.resolve_context(bot=bot, chat_id=chat_id, user_id=chat_id)
     await state_context.set_state(StoryState.final_stage)
 
-    photo = FSInputFile("data/photos/text_12_pro_1.jpg")
-    await bot.send_photo(
+    await my_send_text_and_photos(
         chat_id=chat_id,
-        photo=photo,
-        caption=text_12_for_pro,
-        parse_mode="HTML",
-        reply_markup=get_reviews_kb(),
+        text=text_12_for_pro,
+        photos=["data/photos/text_12_pro_1.jpg"],
+        post_id="12pro",
     )
 
     # run_date = calculate_run_date()
@@ -63,12 +62,11 @@ async def send_pro_text_12(chat_id: int):
 
 
 async def send_pro_text_11(chat_id: int):
-    photo = FSInputFile("data/photos/text_11_pro_1.jpg")
-    await bot.send_photo(
+    await my_send_text_and_photos(
         chat_id=chat_id,
-        photo=photo,
-        caption=text_11_for_pro,
-        parse_mode="HTML",
+        text=text_11_for_pro,
+        photos=["data/photos/text_11_pro_1.jpg"],
+        post_id="11pro",
     )
 
     scheduler.add_job(
@@ -84,15 +82,13 @@ async def send_pro_text_10(chat_id: int):
     state_context = dp.fsm.resolve_context(bot=bot, chat_id=chat_id, user_id=chat_id)
     await state_context.set_state(StoryState.final_stage)
 
-    photo = FSInputFile("data/photos/text_10_pro_1.jpg")
-    await bot.send_photo(
+    await my_send_text_and_photos(
         chat_id=chat_id,
-        photo=photo,
-        caption=text_10_for_pro,
-        parse_mode="HTML",
+        text=text_10_for_pro,
+        photos=["data/photos/text_10_pro_1.jpg"],
+        post_id="10pro",
     )
 
-    # Планируем 11-й текст
     scheduler.add_job(
         send_pro_text_11,
         trigger="date",

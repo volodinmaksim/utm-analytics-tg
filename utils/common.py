@@ -67,19 +67,16 @@ async def my_send_text_and_photos(
     photos: list[str],
     post_id: str,
 ):
-    media = []
-    for i, path in enumerate(photos):
-        if i == 0:
-            media.append(
-                InputMediaPhoto(
-                    media=FSInputFile(path),
-                    parse_mode="HTML",
-                )
-            )
-        else:
-            media.append(InputMediaPhoto(media=FSInputFile(path)))
+    if len(photos) == 1:
+        await bot.send_photo(
+            chat_id=chat_id,
+            photo=FSInputFile(photos[0]),
+            parse_mode="HTML",
+        )
+    else:
+        media = [InputMediaPhoto(media=FSInputFile(p)) for p in photos]
+        await bot.send_media_group(chat_id=chat_id, media=media)
 
-    await bot.send_media_group(chat_id=chat_id, media=media)
     await bot.send_message(
         chat_id=chat_id,
         text=text,

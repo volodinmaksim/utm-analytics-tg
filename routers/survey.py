@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 from aiogram import Router, F, types
 from aiogram.exceptions import TelegramBadRequest
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
 
@@ -35,7 +36,6 @@ async def process_survey_yes(callback: types.CallbackQuery, state: FSMContext):
         "P.S. А новый полезный текст пришлем завтра."
     )
 
-    target_func = None
     if user and user.segment == "pro":
         from routers.pro_continued import send_pro_text_10
 

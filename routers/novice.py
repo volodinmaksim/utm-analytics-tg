@@ -108,7 +108,6 @@ async def handle_feedback(callback: types.CallbackQuery):
     )
     await add_event(
         tg_id=callback.from_user.id,
-        username=user_name,
         event_name=f"feedback_{vote_type}_{post_id}",
     )
 
