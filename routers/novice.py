@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InputMediaPhoto, FSInputFile
 
 from data.states import StoryState
 from data.story_content import (
@@ -17,6 +16,7 @@ from db.crud import add_event, set_segment
 from loader import scheduler, bot, dp
 from utils.common import get_next_working_time, my_send_photos
 from utils.keyboards import get_feedback_kb, get_survey_kb
+from utils.scheduler import schedule_user_job
 
 router = Router()
 
@@ -50,8 +50,11 @@ async def send_novice_text_2(chat_id: int):
 
     run_date = datetime.now() + timedelta(seconds=6)
     # run_date = get_next_working_time()
-    scheduler.add_job(
-        send_novice_text_3, trigger="date", run_date=run_date, args=[chat_id]
+    schedule_user_job(
+        job_id=f"novice_text_3:{chat_id}",
+        run_date=run_date,
+        func=send_novice_text_3,
+        args=[chat_id],
     )
 
 
@@ -87,10 +90,10 @@ async def start_novice_path(callback: types.CallbackQuery, state: FSMContext):
 
     run_date = datetime.now() + timedelta(seconds=6)
     # run_date = get_next_working_time()
-    scheduler.add_job(
-        send_novice_text_2,
-        trigger="date",
+    schedule_user_job(
+        job_id=f"novice_text_2:{callback.from_user.id}",
         run_date=run_date,
+        func=send_novice_text_2,
         args=[callback.message.chat.id],
     )
 
@@ -102,10 +105,6 @@ async def handle_feedback(callback: types.CallbackQuery):
     data = callback.data.split("_")
     vote_type = data[1]
     post_id = data[2]
-    user_name = (
-        callback.from_user.username
-        or f"{callback.from_user.first_name} {callback.from_user.last_name or ''}".strip()
-    )
     await add_event(
         tg_id=callback.from_user.id,
         event_name=f"feedback_{vote_type}_{post_id}",

@@ -1,12 +1,35 @@
+from collections.abc import Callable
+from datetime import datetime
 from data.states import StoryState
 from aiogram import Bot
-from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from loader import dp, scheduler
 
 from data.story_content import text_after_15_minutes
 
 
-async def send_15min_survey(chat_id: int, bot: Bot, state: FSMContext):
+def schedule_user_job(
+    *,
+    job_id: str,
+    run_date: datetime,
+    func: Callable,
+    args: list,
+) -> None:
+    scheduler.add_job(
+        func,
+        trigger="date",
+        run_date=run_date,
+        args=args,
+        id=job_id,
+        replace_existing=True,
+        misfire_grace_time=600,
+        coalesce=True,
+        max_instances=1,
+    )
+
+
+async def send_15min_survey(chat_id: int, bot: Bot):
+    state = dp.fsm.resolve_context(bot=bot, chat_id=chat_id, user_id=chat_id)
     current_state = await state.get_state()
     if current_state != StoryState.waiting_15min_pause:
         return

@@ -8,9 +8,9 @@ from config import settings
 from data.states import StoryState
 from db.crud import add_user, add_event
 from exception.db import UserNotFound
-from loader import scheduler, logger
+from loader import logger
 from data.story_content import text_hello, text_subscription_is_confirmed
-from utils.scheduler import send_15min_survey
+from utils.scheduler import send_15min_survey, schedule_user_job
 
 router = Router(name="start_router")
 
@@ -19,7 +19,7 @@ router = Router(name="start_router")
 async def cmd_start(message: types.Message, command: CommandObject, state: FSMContext):
     await state.set_state(StoryState.waiting_for_subscription)
 
-    utm = str(command.args).strip()
+    utm = (command.args or "").strip()
     user_name = (
         message.from_user.username
         or f"{message.from_user.first_name} {message.from_user.last_name or ''}".strip()
@@ -55,12 +55,12 @@ async def verify_subscription(
             text_subscription_is_confirmed,
             reply_markup=builder.as_markup(),
         )
-        scheduler.add_job(
-            send_15min_survey,
-            trigger="date",
+        schedule_user_job(
+            job_id=f"15min_survey:{callback.from_user.id}",
             run_date=datetime.now() + timedelta(seconds=6),
             # run_date=datetime.now() + timedelta(minutes=15),
-            args=[callback.message.chat.id, bot, state],
+            func=send_15min_survey,
+            args=[callback.message.chat.id, bot],
         )
     else:
         await callback.answer("Вы еще не подписались на канал!", show_alert=True)
@@ -75,6 +75,6 @@ async def track_link_click(callback: types.CallbackQuery):
             event_name='Получить файл: "Пакет инструментов для работы с РПП от Ирины Ушаковой"',
         )
     except UserNotFound:
-        logger(f"Ошибка: пользователь с tg_id {tg_id} не найден в базе.")
+        logger.error("Ошибка: пользователь с tg_id %s не найден в базе.", tg_id)
 
     await callback.message.edit_text(f"Ваша ссылка: {settings.YDISK_LINK}")

@@ -1,7 +1,6 @@
-import asyncio
 from datetime import datetime, timedelta
-from aiogram import Router, types
-from aiogram.types import FSInputFile, InputMediaPhoto
+from aiogram import Router
+from aiogram.types import FSInputFile
 
 from data.states import StoryState
 from data.story_content import (
@@ -10,9 +9,9 @@ from data.story_content import (
     text_12_for_pro,
     final_goodbye_text_up,
 )
-from loader import scheduler, dp, bot
+from loader import dp, bot
 from utils.common import my_send_text_and_photos
-from utils.keyboards import get_reviews_kb
+from utils.scheduler import schedule_user_job
 
 router = Router()
 
@@ -53,10 +52,10 @@ async def send_pro_text_12(chat_id: int):
 
     # run_date = calculate_run_date()
 
-    scheduler.add_job(
-        send_pro_reviews_auto,
-        trigger="date",
+    schedule_user_job(
+        job_id=f"pro_reviews:{chat_id}",
         run_date=datetime.now() + timedelta(seconds=16),  # run_date,
+        func=send_pro_reviews_auto,
         args=[chat_id],
     )
 
@@ -69,10 +68,10 @@ async def send_pro_text_11(chat_id: int):
         post_id="11pro",
     )
 
-    scheduler.add_job(
-        send_pro_text_12,
-        trigger="date",
+    schedule_user_job(
+        job_id=f"pro_text_12:{chat_id}",
         run_date=datetime.now() + timedelta(seconds=6),
+        func=send_pro_text_12,
         args=[chat_id],
     )
 
@@ -89,9 +88,9 @@ async def send_pro_text_10(chat_id: int):
         post_id="10pro",
     )
 
-    scheduler.add_job(
-        send_pro_text_11,
-        trigger="date",
+    schedule_user_job(
+        job_id=f"pro_text_11:{chat_id}",
         run_date=datetime.now() + timedelta(seconds=6),
+        func=send_pro_text_11,
         args=[chat_id],
     )

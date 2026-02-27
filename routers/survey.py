@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 
 from aiogram import Router, F, types
 from aiogram.exceptions import TelegramBadRequest
-from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import FSInputFile
 
@@ -14,7 +13,8 @@ from data.story_content import (
     text_reviews,
     final_goodbye_text_down,
 )
-from loader import scheduler, bot
+from loader import bot
+from utils.scheduler import schedule_user_job
 
 router = Router()
 
@@ -47,10 +47,10 @@ async def process_survey_yes(callback: types.CallbackQuery, state: FSMContext):
 
     run_date = datetime.now() + timedelta(seconds=6)
     # run_date = get_next_working_time()
-    scheduler.add_job(
-        target_func,
-        trigger="date",
+    schedule_user_job(
+        job_id=f"continued_path:{callback.from_user.id}",
         run_date=run_date,
+        func=target_func,
         args=[callback.message.chat.id],
     )
     await callback.answer()
@@ -115,13 +115,9 @@ async def user_come_back(callback: types.CallbackQuery, state: FSMContext):
 
 @router.message(StoryState.waiting_for_wishes)
 async def collect_user_wishes(message: types.Message, state: FSMContext):
-    user_name = (
-        message.from_user.username
-        or f"{message.from_user.first_name} {message.from_user.last_name or ''}".strip()
-    )
     await add_event(
         tg_id=message.from_user.id,
-        event_name=f"user_wish: {message.text}",
+        event_name=f"user_wish: {(message.text or '').strip()}",
     )
 
     await message.answer(

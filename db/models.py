@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import BigInteger, DateTime, func, Boolean, String, ForeignKey
+from sqlalchemy import BigInteger, DateTime, func, Text, String, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -30,7 +30,7 @@ class Events(Base):
     __tablename__ = "events"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
-    event_name: Mapped[str] = mapped_column(String(50), nullable=False)
+    event_name: Mapped[str] = mapped_column(Text, nullable=False)
     timestamp: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

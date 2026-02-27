@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
-
+from collections import deque
 
 from config import settings
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -20,6 +20,10 @@ from routers import (
 )
 
 storage = MemoryStorage()
+
+PROCESSED_UPDATES_LIMIT = 5000
+_processed_update_ids_queue: deque[int] = deque(maxlen=PROCESSED_UPDATES_LIMIT)
+_processed_update_ids: set[int] = set()
 
 
 @asynccontextmanager
@@ -56,10 +60,27 @@ app = FastAPI(lifespan=lifespan)
 @app.post("/webhook")
 async def handle_telegram_webhook(request: Request):
     try:
+        secret_token = request.headers.get("X-Telegram-Bot-Api-Secret-Token")
+        if secret_token != settings.SECRET_TG_KEY:
+            logger.warning("Invalid Telegram webhook secret token")
+            return JSONResponse({"status": "forbidden"}, status_code=403)
+
         update_data = await request.json()
         from aiogram.types import Update
 
         update = Update.model_validate(update_data)
+
+        if update.update_id in _processed_update_ids:
+            logger.info("Duplicate update skipped: %s", update.update_id)
+            return {"status": "ok"}
+
+        if len(_processed_update_ids_queue) == PROCESSED_UPDATES_LIMIT:
+            stale_update_id = _processed_update_ids_queue.popleft()
+            _processed_update_ids.discard(stale_update_id)
+
+        _processed_update_ids_queue.append(update.update_id)
+        _processed_update_ids.add(update.update_id)
+
         await dp.feed_update(bot, update)
         return {"status": "ok"}
     except Exception as e:

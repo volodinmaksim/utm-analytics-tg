@@ -12,9 +12,10 @@ from data.story_content import (
     text_8_for_beginners,
     final_goodbye_text_up,
 )
-from loader import scheduler, dp, bot
+from loader import dp, bot
 from utils.common import my_send_photos, my_send_video
 from utils.keyboards import get_feedback_kb, get_reviews_kb
+from utils.scheduler import schedule_user_job
 
 router = Router()
 
@@ -50,10 +51,10 @@ async def send_novice_text_7(chat_id: int):
         reply_markup=get_reviews_kb(),
     )
 
-    scheduler.add_job(
-        send_reviews_auto,
-        trigger="date",
+    schedule_user_job(
+        job_id=f"novice_reviews:{chat_id}",
         run_date=datetime.now() + timedelta(seconds=16),
+        func=send_reviews_auto,
         args=[chat_id],
     )
 
@@ -65,13 +66,12 @@ async def send_novice_text_6(chat_id: int):
         reply_markup=get_feedback_kb(post_id="6"),
         parse_mode="HTML",
     )
-    scheduler.add_job(
-        send_novice_text_7,
-        trigger="date",
+    schedule_user_job(
+        job_id=f"novice_text_7:{chat_id}",
         run_date=datetime.now() + timedelta(seconds=6),
+        func=send_novice_text_7,
         args=[chat_id],
     )
-
 
 async def send_novice_text_5(chat_id: int):
     photos = [f"data/photos/text_5_beginers_{i}.jpg" for i in range(1, 7)]
@@ -79,10 +79,10 @@ async def send_novice_text_5(chat_id: int):
         chat_id=chat_id, text=text_5_for_beginners, photos=photos, post_id="5"
     )
 
-    scheduler.add_job(
-        send_novice_text_6,
-        trigger="date",
+    schedule_user_job(
+        job_id=f"novice_text_6:{chat_id}",
         run_date=datetime.now() + timedelta(seconds=6),
+        func=send_novice_text_6,
         args=[chat_id],
     )
 
@@ -93,9 +93,9 @@ async def send_novice_text_4(chat_id: int):
         chat_id=chat_id, text=text_4_for_beginners, path=path, post_id="4"
     )
 
-    scheduler.add_job(
-        send_novice_text_5,
-        trigger="date",
+    schedule_user_job(
+        job_id=f"novice_text_5:{chat_id}",
         run_date=datetime.now() + timedelta(seconds=6),
+        func=send_novice_text_5,
         args=[chat_id],
     )

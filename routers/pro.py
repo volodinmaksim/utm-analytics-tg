@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from aiogram import Router, F, types
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InputMediaPhoto, FSInputFile
+from aiogram.types import FSInputFile
 
 from data.states import StoryState
 from data.story_content import (
@@ -15,10 +15,11 @@ from data.story_content import (
     survey_question_text,
     text_after_level,
 )
-from db.crud import add_event, set_segment
-from loader import scheduler, bot, dp
+from db.crud import set_segment
+from loader import bot, dp
 from utils.common import get_next_working_time, my_send_photos, my_send_text_and_photos
 from utils.keyboards import get_feedback_kb, get_survey_kb
+from utils.scheduler import schedule_user_job
 
 router = Router()
 
@@ -57,8 +58,11 @@ async def send_pro_text_8(chat_id: int):
 
     run_date = datetime.now() + timedelta(seconds=6)
     # run_date = get_next_working_time()
-    scheduler.add_job(
-        send_pro_text_9, trigger="date", run_date=run_date, args=[chat_id]
+    schedule_user_job(
+        job_id=f"pro_text_9:{chat_id}",
+        run_date=run_date,
+        func=send_pro_text_9,
+        args=[chat_id],
     )
 
 
@@ -106,10 +110,10 @@ async def start_pro_path(callback: types.CallbackQuery, state: FSMContext):
 
     run_date = datetime.now() + timedelta(seconds=6)
     # run_date = get_next_working_time()
-    scheduler.add_job(
-        send_pro_text_8,
-        trigger="date",
+    schedule_user_job(
+        job_id=f"pro_text_8:{callback.from_user.id}",
         run_date=run_date,
+        func=send_pro_text_8,
         args=[callback.message.chat.id],
     )
 
