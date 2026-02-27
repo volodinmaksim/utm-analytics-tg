@@ -10,6 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent
 class Settings(BaseSettings):
     DB_URL: str = f"sqlite+aiosqlite:///{BASE_DIR}/users.db"
     BOT_TOKEN: SecretStr
+    REDIS_URL: str = "redis://localhost:6379/0"
     BASE_URL: str
     ADMIN_ID: int
     CHAT_ID_TO_CHECK: int

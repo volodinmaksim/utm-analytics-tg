@@ -4,11 +4,8 @@ from contextlib import asynccontextmanager
 from collections import deque
 
 from config import settings
-from aiogram.fsm.storage.memory import MemoryStorage
 
-from db.db_helper import db_helper
-from db.models import Base
-from loader import bot, dp, logger, scheduler
+from loader import bot, dp, logger, scheduler, redis
 from routers import (
     start_router,
     onboarding_router,
@@ -18,8 +15,6 @@ from routers import (
     pro_continued_router,
     novice_continued_router,
 )
-
-storage = MemoryStorage()
 
 PROCESSED_UPDATES_LIMIT = 5000
 _processed_update_ids_queue: deque[int] = deque(maxlen=PROCESSED_UPDATES_LIMIT)
@@ -44,12 +39,11 @@ async def lifespan(app: FastAPI):
     )
     logger.info(f"Webhook set to: {webhook_url}")
 
-    async with db_helper.engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
     yield
 
     scheduler.shutdown()
+    await dp.storage.close()
+    await redis.aclose()
     await bot.delete_webhook()
     logger.info("Webhook deleted")
 

@@ -13,7 +13,7 @@ from data.story_content import (
     text_after_level,
 )
 from db.crud import add_event, set_segment
-from loader import scheduler, bot, dp
+from loader import bot, dp
 from utils.common import get_next_working_time, my_send_photos
 from utils.keyboards import get_feedback_kb, get_survey_kb
 from utils.scheduler import schedule_user_job
