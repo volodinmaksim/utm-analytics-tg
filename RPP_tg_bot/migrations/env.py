@@ -1,17 +1,9 @@
 from logging.config import fileConfig
 
-from pathlib import Path
-from urllib.parse import urlsplit, urlunsplit
-import os
-import sys
+from sqlalchemy import engine_from_config
+from sqlalchemy import pool
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -22,63 +14,16 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-
-def get_target_metadata():
-    from db.models import Base
-
-    return Base.metadata
-
-
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = get_target_metadata()
+target_metadata = None
+
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-
-
-def get_sync_driver() -> str:
-    try:
-        import psycopg  # noqa: F401
-
-        return "psycopg"
-    except ModuleNotFoundError:
-        pass
-
-    try:
-        import psycopg2  # noqa: F401
-
-        return "psycopg2"
-    except ModuleNotFoundError as exc:
-        raise RuntimeError(
-            "Synchronous PostgreSQL driver is not installed. "
-            "Install `psycopg` or `psycopg2-binary`."
-        ) from exc
-
-
-def to_sync_db_url(url: str) -> str:
-    parsed = urlsplit(url)
-    base_scheme = parsed.scheme.split("+", 1)[0]
-    scheme = "postgresql" if base_scheme == "postgres" else base_scheme
-    return urlunsplit(
-        (
-            f"{scheme}+{get_sync_driver()}",
-            parsed.netloc,
-            parsed.path,
-            parsed.query,
-            parsed.fragment,
-        )
-    )
-
-
-def get_migration_db_url() -> str:
-    db_url = os.getenv("DB_URL")
-    if db_url:
-        return to_sync_db_url(db_url)
-    return config.get_main_option("sqlalchemy.url")
 
 
 def run_migrations_offline() -> None:
@@ -93,8 +38,9 @@ def run_migrations_offline() -> None:
     script output.
 
     """
+    url = config.get_main_option("sqlalchemy.url")
     context.configure(
-        url=get_migration_db_url(),
+        url=url,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
@@ -111,18 +57,15 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    section = config.get_section(config.config_ini_section, {})
-    section["sqlalchemy.url"] = get_migration_db_url()
-
     connectable = engine_from_config(
-        section,
+        config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata, render_as_batch=True
+            connection=connection, target_metadata=target_metadata
         )
 
         with context.begin_transaction():
