@@ -1,9 +1,8 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import SecretStr, computed_field
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -13,19 +12,12 @@ class Settings(BaseSettings):
     BOT_TOKEN: SecretStr
     REDIS_URL: str | None = None
     BASE_URL: str
-    ADMIN_ID: int
     CHAT_ID_TO_CHECK: int
     CHAT_URL: str
     SECRET_TG_KEY: str
     YDISK_LINK: str
-
     HOST: str
     PORT: int
-
-    @computed_field
-    @property
-    def WEBHOOK_PATH(self) -> str:
-        return f"/{self.BOT_TOKEN.get_secret_value()}"
 
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",

@@ -1,10 +1,8 @@
 import logging
-from zoneinfo import ZoneInfo
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from redis.asyncio import Redis
 
 from config import settings
@@ -18,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 bot = Bot(token=settings.BOT_TOKEN.get_secret_value())
 
-
 if settings.REDIS_URL:
     redis = Redis.from_url(settings.REDIS_URL)
     logger.info("FSM storage: Redis (%s)", settings.REDIS_URL)
@@ -27,5 +24,3 @@ else:
     redis = None
     logger.warning("FSM storage: MemoryStorage (REDIS_URL is not set)")
     dp = Dispatcher(storage=MemoryStorage())
-
-scheduler = AsyncIOScheduler(timezone=ZoneInfo("UTC"))
