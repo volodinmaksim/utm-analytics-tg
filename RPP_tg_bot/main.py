@@ -66,18 +66,21 @@ async def handle_telegram_webhook(request: Request):
 
         update = Update.model_validate(update_data)
 
-        if update.update_id in _processed_update_ids:
+        update_id = update.update_id
+
+        if update_id in _processed_update_ids:
             logger.info("Duplicate update skipped: %s", update.update_id)
             return {"status": "ok"}
+
+        await dp.feed_update(bot, update)
 
         if len(_processed_update_ids_queue) == PROCESSED_UPDATES_LIMIT:
             stale_update_id = _processed_update_ids_queue.popleft()
             _processed_update_ids.discard(stale_update_id)
 
-        _processed_update_ids_queue.append(update.update_id)
-        _processed_update_ids.add(update.update_id)
+        _processed_update_ids_queue.append(update_id)
+        _processed_update_ids.add(update_id)
 
-        await dp.feed_update(bot, update)
         return {"status": "ok"}
     except RedisConnectionError as e:
         logger.error("Redis is unavailable while processing update: %s", e)

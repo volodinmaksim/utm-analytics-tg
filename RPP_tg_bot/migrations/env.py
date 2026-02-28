@@ -1,4 +1,3 @@
-from importlib.util import find_spec
 from logging.config import fileConfig
 
 from pathlib import Path
@@ -42,16 +41,28 @@ target_metadata = get_target_metadata()
 
 
 def get_sync_driver() -> str:
-    if find_spec("psycopg") is not None:
+    try:
+        import psycopg  # noqa: F401
+
         return "psycopg"
-    if find_spec("psycopg2") is not None:
+    except ModuleNotFoundError:
+        pass
+
+    try:
+        import psycopg2  # noqa: F401
+
         return "psycopg2"
-    return "psycopg2"
+    except ModuleNotFoundError as exc:
+        raise RuntimeError(
+            "Synchronous PostgreSQL driver is not installed. "
+            "Install `psycopg` or `psycopg2-binary`."
+        ) from exc
 
 
 def to_sync_db_url(url: str) -> str:
     parsed = urlsplit(url)
-    scheme = parsed.scheme.split("+", 1)[0]
+    base_scheme = parsed.scheme.split("+", 1)[0]
+    scheme = "postgresql" if base_scheme == "postgres" else base_scheme
     return urlunsplit(
         (
             f"{scheme}+{get_sync_driver()}",
