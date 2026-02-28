@@ -8,7 +8,8 @@ BASE_DIR = Path(__file__).resolve().parent
 
 
 class Settings(BaseSettings):
-    DB_URL: str
+    ASYNC_DB_URL: str | None = None
+    DB_URL: str | None = None
     BOT_TOKEN: SecretStr
     REDIS_URL: str | None = None
     BASE_URL: str
@@ -20,6 +21,16 @@ class Settings(BaseSettings):
 
     HOST: str
     PORT: int
+
+    @property
+    def database_url(self) -> str:
+        if self.ASYNC_DB_URL:
+            return self.ASYNC_DB_URL
+        if self.DB_URL:
+            if self.DB_URL.startswith("sqlite:///"):
+                return self.DB_URL.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
+            return self.DB_URL
+        return f"sqlite+aiosqlite:///{BASE_DIR / 'rpp_tg_bot.db'}"
 
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",
