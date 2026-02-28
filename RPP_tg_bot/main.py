@@ -6,6 +6,8 @@ from collections import deque
 from config import settings
 from redis.exceptions import ConnectionError as RedisConnectionError
 
+from db.db_helper import db_helper
+from db.models import Base
 from loader import bot, dp, logger, scheduler, redis
 from routers import (
     start_router,
@@ -22,9 +24,15 @@ _processed_update_ids_queue: deque[int] = deque(maxlen=PROCESSED_UPDATES_LIMIT)
 _processed_update_ids: set[int] = set()
 
 
+async def init_db():
+    async with db_helper.engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     webhook_url = settings.BASE_URL + "/webhook"
+    await init_db()
     dp.include_router(start_router)
     dp.include_router(onboarding_router)
     dp.include_router(novice_router)

@@ -44,9 +44,9 @@ async def verify_subscription(callback: types.CallbackQuery, bot: Bot):
         except UserNotFound:
             logger.error("Ошибка: пользователь с tg_id %s не найден в базе.", callback.from_user.id)
 
-        await callback.message.answer(text_subscription_is_confirmed)
+        await callback.message.answer(text_subscription_is_confirmed, parse_mode="HTML")
         await callback.message.answer(f"Ваша ссылка: {settings.YDISK_LINK}")
-        await callback.message.answer(text_after_link)
+        await callback.message.answer(text_after_link, parse_mode="HTML")
         await callback.answer()
         return
 

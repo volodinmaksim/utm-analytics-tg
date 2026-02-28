@@ -6,6 +6,8 @@ from fastapi.responses import JSONResponse
 from redis.exceptions import ConnectionError as RedisConnectionError
 
 from config import settings
+from db.db_helper import db_helper
+from db.models import Base
 from loader import bot, dp, logger, redis
 from routers import start_router
 
@@ -13,10 +15,14 @@ PROCESSED_UPDATES_LIMIT = 5000
 _processed_update_ids_queue: deque[int] = deque(maxlen=PROCESSED_UPDATES_LIMIT)
 _processed_update_ids: set[int] = set()
 
+async def init_db():
+    async with db_helper.engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     dp.include_router(start_router)
+    await init_db()
 
     webhook_url = settings.BASE_URL + "/webhook"
     await bot.set_webhook(

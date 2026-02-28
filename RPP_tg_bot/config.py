@@ -9,7 +9,6 @@ BASE_DIR = Path(__file__).resolve().parent
 
 class Settings(BaseSettings):
     ASYNC_DB_URL: str | None = None
-    DB_URL: str | None = None
     BOT_TOKEN: SecretStr
     REDIS_URL: str | None = None
     BASE_URL: str
