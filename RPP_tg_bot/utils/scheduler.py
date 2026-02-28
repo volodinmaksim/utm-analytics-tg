@@ -3,7 +3,7 @@ from datetime import datetime
 from data.states import StoryState
 from aiogram import Bot
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from loader import dp, scheduler
+from loader import bot, dp, scheduler
 
 from data.story_content import text_after_15_minutes
 
@@ -31,7 +31,7 @@ def schedule_user_job(
     )
 
 
-async def send_15min_survey(chat_id: int, bot: Bot):
+async def send_15min_survey(chat_id: int):
     state = dp.fsm.resolve_context(bot=bot, chat_id=chat_id, user_id=chat_id)
     current_state = await state.get_state()
 

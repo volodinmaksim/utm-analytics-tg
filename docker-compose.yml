@@ -13,15 +13,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    ports:
+      - "5432:5432"
 
   redis:
     image: redis:7-alpine
     restart: unless-stopped
-    command: ["redis-server", "--appendonly", "yes"]
+    command: [ "redis-server", "--appendonly", "yes" ]
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -43,8 +45,9 @@ services:
       REDIS_URL: redis://redis:6379/0
       HOST: 0.0.0.0
       PORT: 8000
-    ports:
-      - "8001:8000"
+      WEBHOOK_PATH: /rpp/webhook
+    expose:
+      - "8000"
 
   farma_bot:
     build:
@@ -63,8 +66,20 @@ services:
       REDIS_URL: redis://redis:6379/1
       HOST: 0.0.0.0
       PORT: 8000
+      WEBHOOK_PATH: /farma/webhook
+    expose:
+      - "8000"
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      - rpp_bot
+      - farma_bot
     ports:
-      - "8002:8000"
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
 
 volumes:
   postgres_data:

@@ -31,7 +31,7 @@ async def init_db():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    webhook_url = settings.BASE_URL + "/webhook"
+    webhook_url = settings.BASE_URL + "/rpp/webhook"
     await init_db()
     dp.include_router(start_router)
     dp.include_router(onboarding_router)
@@ -61,7 +61,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-@app.post("/webhook")
+@app.post("/rpp/webhook")
 async def handle_telegram_webhook(request: Request):
     try:
         secret_token = request.headers.get("X-Telegram-Bot-Api-Secret-Token")

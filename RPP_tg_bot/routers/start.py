@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from aiogram.filters import Command, CommandObject
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram import Router, types, F, Bot
+from aiogram import Router, types, F
 from config import settings
 from data.states import StoryState
 from db.crud import add_user, add_event
@@ -36,8 +36,9 @@ async def cmd_start(message: types.Message, command: CommandObject, state: FSMCo
 
 @router.callback_query(StoryState.waiting_for_subscription, F.data == "check_sub")
 async def verify_subscription(
-    callback: types.CallbackQuery, state: FSMContext, bot: Bot
+    callback: types.CallbackQuery, state: FSMContext
 ):
+    from loader import bot
 
     user_sub = await bot.get_chat_member(
         chat_id=settings.CHAT_ID_TO_CHECK, user_id=callback.from_user.id
@@ -59,7 +60,7 @@ async def verify_subscription(
             job_id=f"15min_survey:{callback.from_user.id}",
             run_date=datetime.now() + timedelta(minutes=15),
             func=send_15min_survey,
-            args=[callback.message.chat.id, bot],
+            args=[callback.message.chat.id],
         )
     else:
         await callback.answer("Вы еще не подписались на канал!", show_alert=True)

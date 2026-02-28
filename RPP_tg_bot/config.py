@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from urllib.parse import urlparse
 
 from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -30,6 +31,35 @@ class Settings(BaseSettings):
                 return self.DB_URL.replace("sqlite:///", "sqlite+aiosqlite:///", 1)
             return self.DB_URL
         return f"sqlite+aiosqlite:///{BASE_DIR / 'rpp_tg_bot.db'}"
+
+    @property
+    def REDIS_HOST(self) -> str:
+        if not self.REDIS_URL:
+            return "localhost"
+        parsed = urlparse(self.REDIS_URL)
+        return parsed.hostname or "localhost"
+
+    @property
+    def REDIS_PORT(self) -> int:
+        if not self.REDIS_URL:
+            return 6379
+        parsed = urlparse(self.REDIS_URL)
+        return parsed.port or 6379
+
+    @property
+    def REDIS_DB(self) -> int:
+        if not self.REDIS_URL:
+            return 0
+        parsed = urlparse(self.REDIS_URL)
+        path = (parsed.path or "/0").lstrip("/")
+        return int(path) if path.isdigit() else 0
+
+    @property
+    def REDIS_PASSWORD(self) -> str | None:
+        if not self.REDIS_URL:
+            return None
+        parsed = urlparse(self.REDIS_URL)
+        return parsed.password
 
     model_config = SettingsConfigDict(
         env_file=BASE_DIR / ".env",

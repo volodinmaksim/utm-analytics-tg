@@ -15,8 +15,6 @@ router = Router()
 
 @router.callback_query(F.data == "extra_no", StoryState.waiting_for_extra_materials)
 async def process_decline(callback: types.CallbackQuery):
-    # await add_event(tg_id=callback.from_user.id, event_name="onboarding_declined")
-
     builder = types.InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -43,7 +41,6 @@ async def process_decline(callback: types.CallbackQuery):
 
 @router.callback_query(F.data == "extra_yes")
 async def process_accept(callback: types.CallbackQuery, state: FSMContext):
-    # await add_event(tg_id=callback.from_user.id, event_name="onboarding_accepted")
 
     await state.set_state(StoryState.choosing_experience)
 
