@@ -15,13 +15,13 @@ from data.story_content import (
 )
 from loader import bot
 from utils.scheduler import schedule_user_job
+from utils.common import get_next_working_time
 
 router = Router()
 
 
 @router.callback_query(F.data == "survey_yes", StoryState.waiting_for_survey_response)
 async def process_survey_yes(callback: types.CallbackQuery, state: FSMContext):
-    # await add_event(tg_id=callback.from_user.id, event_name="survey_answered_yes")
     user = await get_user(tg_id=callback.from_user.id)
 
     await state.set_state(StoryState.waiting_for_wishes)
@@ -45,8 +45,7 @@ async def process_survey_yes(callback: types.CallbackQuery, state: FSMContext):
 
         target_func = send_novice_text_4
 
-    run_date = datetime.now() + timedelta(seconds=6)
-    # run_date = get_next_working_time()
+    run_date = get_next_working_time()
     schedule_user_job(
         job_id=f"continued_path:{callback.from_user.id}",
         run_date=run_date,

@@ -57,8 +57,7 @@ async def verify_subscription(
         )
         schedule_user_job(
             job_id=f"15min_survey:{callback.from_user.id}",
-            run_date=datetime.now() + timedelta(seconds=6),
-            # run_date=datetime.now() + timedelta(minutes=15),
+            run_date=datetime.now() + timedelta(minutes=15),
             func=send_15min_survey,
             args=[callback.message.chat.id, bot],
         )

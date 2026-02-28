@@ -56,8 +56,7 @@ async def send_pro_text_8(chat_id: int):
         post_id="8pro",
     )
 
-    run_date = datetime.now() + timedelta(seconds=6)
-    # run_date = get_next_working_time()
+    run_date = get_next_working_time()
     schedule_user_job(
         job_id=f"pro_text_9:{chat_id}",
         run_date=run_date,
@@ -78,17 +77,9 @@ async def send_survey_after_pro(chat_id: int):
     )
 
 
-# --- Хэндлеры ---
 
-
-# Срабатывает на выбор "Практик" или "Эксперт"
 @router.callback_query(F.data == "exp_pro", StoryState.choosing_experience)
 async def start_pro_path(callback: types.CallbackQuery, state: FSMContext):
-    # await add_event(
-    #     tg_id=callback.from_user.id,
-    #     username=user_name,
-    #     event_name=f"chosen_path_{callback.data}",
-    # )
 
     with suppress(TelegramBadRequest):
         await callback.message.edit_text(text=text_after_level)
@@ -108,8 +99,7 @@ async def start_pro_path(callback: types.CallbackQuery, state: FSMContext):
 
     await state.set_state(StoryState.pro_path)
 
-    run_date = datetime.now() + timedelta(seconds=6)
-    # run_date = get_next_working_time()
+    run_date = get_next_working_time()
     schedule_user_job(
         job_id=f"pro_text_8:{callback.from_user.id}",
         run_date=run_date,

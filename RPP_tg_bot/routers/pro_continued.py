@@ -10,8 +10,9 @@ from data.story_content import (
     final_goodbye_text_up,
 )
 from loader import dp, bot
-from utils.common import my_send_text_and_photos
+from utils.common import my_send_text_and_photos, get_next_working_time
 from utils.scheduler import schedule_user_job
+
 
 router = Router()
 
@@ -50,11 +51,10 @@ async def send_pro_text_12(chat_id: int):
         post_id="12pro",
     )
 
-    # run_date = calculate_run_date()
-
+    run_date = calculate_run_date()
     schedule_user_job(
         job_id=f"pro_reviews:{chat_id}",
-        run_date=datetime.now() + timedelta(seconds=16),  # run_date,
+        run_date=run_date,
         func=send_pro_reviews_auto,
         args=[chat_id],
     )
@@ -68,16 +68,16 @@ async def send_pro_text_11(chat_id: int):
         post_id="11pro",
     )
 
+    run_date = get_next_working_time()
     schedule_user_job(
         job_id=f"pro_text_12:{chat_id}",
-        run_date=datetime.now() + timedelta(seconds=6),
+        run_date=run_date,
         func=send_pro_text_12,
         args=[chat_id],
     )
 
 
 async def send_pro_text_10(chat_id: int):
-    # Обновляем стейт
     state_context = dp.fsm.resolve_context(bot=bot, chat_id=chat_id, user_id=chat_id)
     await state_context.set_state(StoryState.final_stage)
 
@@ -88,9 +88,10 @@ async def send_pro_text_10(chat_id: int):
         post_id="10pro",
     )
 
+    run_date = get_next_working_time()
     schedule_user_job(
         job_id=f"pro_text_11:{chat_id}",
-        run_date=datetime.now() + timedelta(seconds=6),
+        run_date=run_date,
         func=send_pro_text_11,
         args=[chat_id],
     )

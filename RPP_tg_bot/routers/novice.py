@@ -48,8 +48,8 @@ async def send_novice_text_2(chat_id: int):
         post_id="2beg",
     )
 
-    run_date = datetime.now() + timedelta(seconds=6)
-    # run_date = get_next_working_time()
+
+    run_date = get_next_working_time()
     schedule_user_job(
         job_id=f"novice_text_3:{chat_id}",
         run_date=run_date,
@@ -72,9 +72,6 @@ async def send_survey_after_novice(chat_id: int):
 
 @router.callback_query(F.data == "exp_beginner", StoryState.choosing_experience)
 async def start_novice_path(callback: types.CallbackQuery, state: FSMContext):
-    # await add_event(
-    #     tg_id=callback.from_user.id, event_name="chosen_path_novice"
-    # )
 
     await set_segment(tg_id=callback.from_user.id, segment="beginner")
 
@@ -88,8 +85,7 @@ async def start_novice_path(callback: types.CallbackQuery, state: FSMContext):
 
     await state.set_state(StoryState.novice_path)
 
-    run_date = datetime.now() + timedelta(seconds=6)
-    # run_date = get_next_working_time()
+    run_date = get_next_working_time()
     schedule_user_job(
         job_id=f"novice_text_2:{callback.from_user.id}",
         run_date=run_date,

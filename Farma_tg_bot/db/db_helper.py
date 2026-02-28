@@ -12,7 +12,7 @@ from db.models import Base
 
 class DataBaseHelper:
     def __init__(self, url: str):
-        self.engine = create_async_engine(url)
+        self.engine = create_async_engine(url, pool_pre_ping=True)
         self.session_factory = async_sessionmaker(
             bind=self.engine,
             autoflush=False,
