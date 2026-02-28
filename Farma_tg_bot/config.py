@@ -12,10 +12,12 @@ class Settings(BaseSettings):
     BOT_TOKEN: SecretStr
     REDIS_URL: str | None = None
     BASE_URL: str
+
     CHAT_ID_TO_CHECK: int
     CHAT_URL: str
     SECRET_TG_KEY: str
     YDISK_LINK: str
+
     HOST: str
     PORT: int
 
