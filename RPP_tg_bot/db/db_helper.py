@@ -36,4 +36,4 @@ class DataBaseHelper:
             await scoped_factory.remove()
 
 
-db_helper = DataBaseHelper(settings.DB_URL)
+db_helper = DataBaseHelper(settings.ASYNC_DB_URL)
